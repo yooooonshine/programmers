@@ -30,7 +30,7 @@ class Main {
 		distances[start] = 0;
 
 		boolean visit[] = new boolean[V + 1];
-		dikstra(adj, visit, distances, V);
+		dikstra(adj, visit, distances, start);
 
 		for (int i = 1; i <= V; i++) {
 			if (distances[i] == 999999999) {
@@ -41,28 +41,42 @@ class Main {
 		}
 	}
 
-	public static void dikstra(List<List<Edge>> adj, boolean[] visit, int[] distances, int V) {
-		while(true) {
-			int min = 999999999;
-			int node = 0;
-			for (int i = 1; i <= V; i++) {
-				if (!visit[i] && distances[i] < min) {
-					min = distances[i];
-					node = i;
-				}
+	public static void dikstra(List<List<Edge>> adj, boolean[] visit, int[] distances, int start) {
+		PriorityQueue<Edge> pq = new PriorityQueue<>((o1, o2) -> {
+			int node1 = o1.getNode();
+			int dist1 = o1.getDist();
+			int node2 = o2.getNode();
+			int dist2 = o2.getDist();
+
+			if (dist1 > dist2) {
+				return 1;
+			} else if (dist1 == dist2) {
+				return 0;
+			} else {
+				return -1;
 			}
-			if (node == 0) {
-				return;
+		});
+
+		pq.add(new Edge(start, 0));
+
+		while(!pq.isEmpty()) {
+			Edge edge = pq.poll();
+			int now = edge.getNode();
+			int nowDist = edge.getDist();
+
+			if (visit[now]) {
+				continue;
 			}
 
-			visit[node] = true;
+			visit[now] = true;
 
-			for (Edge edge : adj.get(node)) {
-				int adjNode = edge.getNode();
-				int adjDist = edge.getDist();
+			for (Edge adjEdge : adj.get(now)) {
+				int adjNode = adjEdge.getNode();
+				int adjDist = adjEdge.getDist();
 
-				if (distances[adjNode] >  adjDist + distances[node]) {
-					distances[adjNode] = adjDist + distances[node];
+				if (distances[adjNode] >  adjDist + nowDist) {
+					distances[adjNode] = adjDist +  nowDist;
+					pq.add(new Edge(adjNode, distances[adjNode]));
 				}
 			}
 		}
