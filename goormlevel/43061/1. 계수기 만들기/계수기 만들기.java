@@ -1,69 +1,66 @@
 import java.io.*;
 import java.util.*;
+
 class Main {
 	public static void main(String[] args) throws Exception {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		StringTokenizer st;
+		int N = Integer.parseInt(br.readLine());
 		
-		int N = Integer.parseInt(br.readLine()); //자리수
-		long[] maxNums = new long[N + 1]; // 각 자리수 최대
-		long[] nowNums = new long[N + 1]; // 현재 숫자
- 		
-		st = new StringTokenizer(br.readLine());
+		int[] A = new int[N + 1]; // 최댓값
+		StringTokenizer st = new StringTokenizer(br.readLine());
 		for (int i = 1; i <= N; i++) {
-			maxNums[i] = Long.parseLong(st.nextToken());
+			A[i] = Integer.parseInt(st.nextToken());
 		}
 		
+		int[] B = new int[N + 1]; // 초기값
 		st = new StringTokenizer(br.readLine());
 		for (int i = 1; i <= N; i++) {
-			nowNums[i] = Long.parseLong(st.nextToken());
+			B[i] = Integer.parseInt(st.nextToken());
 		}
 		
-		long k = Long.parseLong(br.readLine()); //횟수
+		int K = Integer.parseInt(br.readLine());
 		
-		long nowLong = toLong(maxNums, nowNums, N);
-		nowLong += k;
+		int max = 1;
+		for (int i = 1; i <= N; i++) {
+			max = max * (A[i] + 1);
+		}
 		
-		getResult(maxNums, nowLong, N);
-	}
-	
-	public static long toLong(long[] maxNums, long[] nowNums, int N) {
-		long sum = 0L;
-		long pow = 1L;
+		int tmp[] = new int[N + 1];
+		for (int i = 0; i < N; i++) {
+			
+			tmp[i] = K / max;
+			K %= max;
+			max /= (A[i + 1] + 1);
+		}
+		tmp[N] = K;
+		
 		for (int i = N; i >= 1; i--) {
-			sum += pow * nowNums[i];
-			pow *= maxNums[i] + 1;
+			B[i] += tmp[i];
+			
+			if (B[i] > A[i]) {
+				B[i] -= A[i] + 1;
+				B[i - 1]++;
+			}
 		}
 		
-		return sum;
-	}
-	
-	public static void getResult(long[] maxNums, long num, int N) throws IOException {
-		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
-		
-		long[] pows = new long[N + 1];
-		
-		long pow = 1L;
-		for (int i = N; i >= 0; i--) {
-			pows[i] = pow;
-			pow *= maxNums[i] + 1;
-		}
-		
-		num %= pows[0];
-
 		for (int i = 1; i <= N; i++) {
-			bw.write(num / pows[i] + "");
-			num = num % pows[i];
+			System.out.print(B[i]);
 		}
-		
-		bw.flush();
-		bw.close();
 	}
 }
 
-//마지막 넘어가면 불변
+// 7 * 10 * 8 * 8
+// 64 * 7 = 4480
+// 6400
+// 64
+// 320 
 
-// 예를 들어 max가 1234 라면
-// 최대는 4 * 3, 2는 4 * 3을 2개, 1은 4 * 3 * 2를 1개
+//5
+//5
+//1
 
-// 59 / 8 -> 73
+//14523 + 551
+// 
+// N개의 자릿수
+// i는 0부터 Ai까지 숫자 표시
+// 가장 왼쪽 최댓값 -> 전파 x
