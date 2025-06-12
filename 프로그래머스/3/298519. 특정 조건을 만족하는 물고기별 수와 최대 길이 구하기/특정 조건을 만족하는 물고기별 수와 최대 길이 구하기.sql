@@ -1,0 +1,5 @@
+select count(*) as FISH_COUNT, max(A.LENGTH) as MAX_LENGTH, A.FISH_TYPE as FISH_TYPE
+from (select ID, FISH_TYPE,CASE WHEN LENGTH is null THEN 10 ELSE LENGTH END AS LENGTH, TIME from FISH_INFO) AS A
+group by A.FISH_TYPE
+having avg(A.LENGTH) >= 33.0
+order by A.FISH_TYPE;
