@@ -22,28 +22,40 @@ public class Main {
 				break;
 			}
 
-			List<List<Integer>> adj = new ArrayList<>();
-			for (int i = 0; i <= N; i++) {
-				adj.add(new ArrayList<>());
-			}
-
+			List<Edge> edges = new ArrayList<>();
 			for (int m = 1; m <= M; m++) {
 				st = new StringTokenizer(br.readLine());
 				int s = Integer.parseInt(st.nextToken());
 				int e = Integer.parseInt(st.nextToken());
 
-				adj.get(s).add(e);
-				adj.get(e).add(s); // 무방향 그래프이므로 양쪽에 추가
+				edges.add(new Edge(s, e));
 			}
 
-			int result = 0;
-			boolean[] visit = new boolean[N + 1];
-			for (int n = 1; n <= N; n++) {
-				// 루트노드만 탐색
-				boolean isTree = bfs(n, adj, visit);
+			int[] parent = new int[N + 1];
+			for (int i = 1; i <= N; i++) {
+				parent[i] = i; // 초기화
+			}
 
-				if (isTree) {
-					result++;
+			for (Edge edge : edges) {
+				int s = edge.s;
+				int e = edge.e;
+
+				if (find(s, parent) == find(e, parent)) {
+					// 사이클이 발생하는 경우
+					parent[find(s, parent)] = 0; // 사이클이 발생한 노드의 루트는 0으로 설정
+				} else {
+					union(s, e, parent); // 사이클이 없는 경우 union
+				}
+			}
+			int result = 0;
+			Set<Integer> uniqueRoots = new HashSet<>();
+			for (int n = 1; n <= N; n++) {
+				if (find(n,parent) != 0) { // 사이클이 없는 노드만 고려
+					int root = find(n, parent);
+					if (!uniqueRoots.contains(root)) {
+						uniqueRoots.add(root);
+						result++;
+					}
 				}
 			}
 
@@ -62,28 +74,27 @@ public class Main {
 		bw.flush();
 	}
 
-	public static boolean bfs(int s, List<List<Integer>> adj, boolean[] visit) {
-		Queue<Edge> q = new LinkedList<>();
-		q.add(new Edge(0, s));
+	public static void union(int a, int b, int[] parent) {
+		int rA = find(a, parent);
+		int rB = find(b, parent);
 
-		while (!q.isEmpty()) {
-			Edge edge = q.poll();
-			int nowS = edge.s;
-			int nowN = edge.e;
-
-			if (visit[nowN]) {
-				return false;
-			}
-			visit[nowN] = true;
-
-			for (Integer next : adj.get(nowN)) {
-				if (nowS == next) {
-					continue; // 자기 자신으로 돌아가는 간선은 무시
-				}
-				q.add(new Edge(nowN, next));
-			}
+		if (rA > rB) {
+			parent[rA] = rB;
+		} else if (rA < rB) {
+			parent[rB] = rA;
 		}
-		return true;
+	}
+
+	public static int find(int a, int[] parent) {
+		if (parent[a] == 0) {
+			return 0; // 사이클이 발생한 노드의 루트는 0
+		}
+		
+		if (parent[a] == a) {
+			return a;
+		}
+
+		return find(parent[a], parent);
 	}
 
 	public static class Edge {
