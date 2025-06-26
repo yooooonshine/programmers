@@ -1,95 +1,101 @@
 import java.util.*;
 import java.io.*;
 
-class Main {
-	public static long inf = 999999999;
+public class Main {
 
-	public static void main(String[] args) throws IOException {
+	public static int M;
+	public static int N;
+
+
+	public static void main(String[] args) throws Exception {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		StringTokenizer st = new StringTokenizer(br.readLine());
 
-		int N = Integer.parseInt(st.nextToken()); //도시 개수
-		int M = Integer.parseInt(st.nextToken()); //버스 개수
+		int cityCount = Integer.parseInt(st.nextToken()); // 도시의 수
+		int busCount = Integer.parseInt(st.nextToken()); // 버스 노선
 
-		List<Edge> adj = new ArrayList<>();
-		for (int i = 0; i < M; i++) {
+		List<Edge> edges = new ArrayList<>();
+		for (int m = 1; m <= busCount; m++) {
 			st = new StringTokenizer(br.readLine());
-			int start = Integer.parseInt(st.nextToken());
-			int end = Integer.parseInt(st.nextToken());
-			long dist = Integer.parseInt(st.nextToken());
-			adj.add(new Edge(start, end, dist));
+
+			int s = Integer.parseInt(st.nextToken());
+			int e = Integer.parseInt(st.nextToken());
+			long d = Integer.parseInt(st.nextToken());
+			edges.add(new Edge(s, e, d));
 		}
 
-		long[] distance = new long[N + 1];
-		Arrays.fill(distance, inf);
-
-		distance[1] = 0;
-		for (int i = 1; i <= N - 1; i++) {
-			bellmanFord(adj, distance);
+		long[] dist = new long[cityCount + 1];
+		for (int i = 1; i <= cityCount; i++) {
+			dist[i] = Integer.MAX_VALUE;
 		}
+		dist[1] = 0;
 
-		long[] tmpDistance = new long[N + 1];
-		for (int i = 1; i <= N; i++) {
-			tmpDistance[i] = distance[i];
-		}
+		for (int i = 1; i < cityCount; i++) {
+			for (Edge edge : edges) {
+				int s = edge.s;
+				int e = edge.e;
+				long d = edge.d;
 
-		bellmanFord(adj, distance);
+				if (dist[s] == Integer.MAX_VALUE) {
+					continue;
+				}
 
-		boolean timeMachine = false;
-		for (int i = 1; i <= N; i++) {
-			if (tmpDistance[i] != distance[i]) {
-				timeMachine = true;
+				if (dist[s] + d < dist[e]) {
+					dist[e] = dist[s] + d;
+				}
 			}
 		}
 
-		if (timeMachine) {
+		long[] result1 = new long[cityCount + 1];
+		for (int i = 1; i <= cityCount; i++) {
+			result1[i] = dist[i];
+		}
+
+		for (Edge edge : edges) {
+			int s = edge.s;
+			int e = edge.e;
+			long d = edge.d;
+
+			if (dist[s] == Integer.MAX_VALUE) {
+				continue;
+			}
+
+			if (dist[s] + d < dist[e]) {
+				dist[e] = dist[s] + d;
+			}
+		}
+
+		boolean correct = true;
+		for (int i = 1; i <= cityCount; i++) {
+			if (result1[i] != dist[i]) {
+				correct = false;
+			}
+		}
+
+		if (!correct) {
 			System.out.println(-1);
 		} else {
-			for (int i = 2; i <= N; i++) {
-				if (distance[i] == inf) {
+			for (int i = 2; i <= cityCount; i++) {
+				if (dist[i] == Integer.MAX_VALUE) {
 					System.out.println(-1);
 				} else {
-					System.out.println(distance[i]);
+					System.out.println(dist[i]);
 				}
 			}
 		}
 	}
 
-	public static void bellmanFord(List<Edge> adj, long[] distance) {
-		for (Edge edge : adj) {
-			int start = edge.getStart();
-			int end = edge.getEnd();
-			if (distance[start] == inf) {
-				continue;
-			}
-			long dist = edge.getDist();
-			if (distance[end] > distance[start] + dist) {
-				distance[end] = distance[start] + dist;
-			}
+	public static class Edge {
+		int s;
+		int e;
+		long d;
+
+		public Edge(int s, int e, long d) {
+			this.s = s;
+			this.e = e;
+			this.d = d;
 		}
 	}
 }
-
-class Edge {
-	private int start;
-	private int end;
-	private long dist;
-
-	public Edge(int start, int end, long dist) {
-		this.start = start;
-		this.end = end;
-		this.dist = dist;
-	}
-
-	public int getStart() {
-		return this.start;
-	}
-
-	public int getEnd() {
-		return this.end;
-	}
-
-	public long getDist() {
-		return this.dist;
-	}
-}
+// 무한대 변경 -> -1
+// 아니면 경로
