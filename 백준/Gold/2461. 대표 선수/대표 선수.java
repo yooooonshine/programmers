@@ -1,4 +1,3 @@
-
 import java.util.*;
 import java.io.*;
 
@@ -54,32 +53,72 @@ public class Main {
 		System.out.println(result);
 	}
 
+
+	// 차이가 m보다 큰가
+	// m보다 작으면 e++
+	// m보다 크면 s++
 	public static boolean isPossible(int mid, List<Student> list) {
 		int s = 0;
 		int e = 0;
 
-		Map<Integer, Integer> freq = new HashMap<>();
+		Map<Integer, Integer> clsSet = new HashMap<>();
 		while (e < list.size()) {
-			Student nowS = list.get(e);
-			freq.put(nowS.cls, freq.getOrDefault(nowS.cls, 0) + 1);
-
-			while (list.get(e).num - list.get(s).num > mid) {
-				Student leftS = list.get(s);
-				freq.put(leftS.cls, freq.get(leftS.cls) - 1);
-				if (freq.get(leftS.cls) == 0) {
-					freq.remove(leftS.cls);
-				}
-				s++;
-			}
-
-			if (freq.size() == N) {
+			if (clsSet.size() == N) {
 				return true;
 			}
-			e++;
+
+			if (list.get(e).num - list.get(s).num > mid) {
+				Student student = list.get(s);
+				clsSet.put(student.cls, clsSet.get(student.cls) - 1);
+
+				if (clsSet.get(student.cls) == 0) {
+					clsSet.remove(student.cls);
+				}
+
+				s++;
+
+			} else {
+				Student student = list.get(e);
+				clsSet.put(student.cls, clsSet.getOrDefault(student.cls, 0) + 1);
+
+				e++;
+			}
 		}
 
 		return false;
 	}
+
+
+
+
+
+
+	// public static boolean isPossible(int mid, List<Student> list) {
+	// 	int s = 0;
+	// 	int e = 0;
+	//
+	// 	Map<Integer, Integer> freq = new HashMap<>();
+	// 	while (e < list.size()) {
+	// 		Student nowS = list.get(e);
+	// 		freq.put(nowS.cls, freq.getOrDefault(nowS.cls, 0) + 1);
+	//
+	// 		while (list.get(e).num - list.get(s).num > mid) {
+	// 			Student leftS = list.get(s);
+	// 			freq.put(leftS.cls, freq.get(leftS.cls) - 1);
+	// 			if (freq.get(leftS.cls) == 0) {
+	// 				freq.remove(leftS.cls);
+	// 			}
+	// 			s++;
+	// 		}
+	//
+	// 		if (freq.size() == N) {
+	// 			return true;
+	// 		}
+	// 		e++;
+	// 	}
+	//
+	// 	return false;
+	// }
 
 	public static class Student implements Comparable<Student> {
 		int num;
@@ -96,8 +135,3 @@ public class Main {
 		}
 	}
 }
-
-// 둘다 이분탐색해야 하네
-
-// 전체를 한 리스트에 넣고,(반 번호를 명시해두자.)
-// 최대가 요건 안넘도록 그 안에 모든 반 있는지
