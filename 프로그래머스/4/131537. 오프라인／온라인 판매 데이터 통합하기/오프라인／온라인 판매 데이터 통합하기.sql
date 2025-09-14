@@ -1,0 +1,13 @@
+# 판매 날짜, 상품ID, 유저 ID, 판매량
+# 판매일, 상품 ID, 유저ID 기준 오름차순
+
+select DATE_FORMAT(D.SALES_DATE, '%Y-%m-%d'), D.PRODUCT_ID, D.USER_ID, D.SALES_AMOUNT
+from
+(
+select null as USER_ID, PRODUCT_ID, SALES_AMOUNT, SALES_DATE
+from OFFLINE_SALE
+union all
+select USER_ID, PRODUCT_ID, SALES_AMOUNT, SALES_DATE
+from ONLINE_SALE) as D
+where YEAR(D.SALES_DATE) = 2022 && MONTH(D.SALES_DATE) = 3
+order by SALES_DATE, PRODUCT_ID, USER_ID;
