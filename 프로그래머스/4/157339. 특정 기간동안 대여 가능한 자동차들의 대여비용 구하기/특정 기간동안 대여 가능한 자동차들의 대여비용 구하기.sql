@@ -1,35 +1,37 @@
 -- 코드를 입력하세요
+-- 종류가 세단 ,SUV 인 자동차 중
+-- 2022년 11월 1일부터 2022년 11월 30일까지 대여 가능하고
+-- 30일간의 대여 금액이 50만원 이상 200만원 미만인 자동차
 
+-- 대여기록은 CAR_ID가 중복된다.해당 날에 대여 기록이 있는 것을 모두 찾는다.
 
-
-# 자동차가 세단 or SUV
-# 2022년 11월 1일부터 2022년 11월 30일까지 대여 가능
-# 30일 간의 대여 금액이 50이상 22이하
-
-with DISCOUNT30 as (
+-- 정렬
+WITH SESUV AS (
     select *
-    from CAR_RENTAL_COMPANY_DISCOUNT_PLAN 
+    from CAR_RENTAL_COMPANY_CAR
+    where CAR_TYPE = 'SUV' or CAR_TYPE = '세단'
+), CANTRENT AS (
+    select distinct CAR_ID
+    from CAR_RENTAL_COMPANY_RENTAL_HISTORY
+    where not (END_DATE < DATE '2022-11-01' or DATE '2022-11-30' < START_DATE)
+), CANRENT AS (
+    select distinct CAR_ID
+    from CAR_RENTAL_COMPANY_CAR
+    where CAR_ID not in (select CAR_ID from CANTRENT)
+), THIRTY AS (
+    select CAR_TYPE, DISCOUNT_RATE
+    from CAR_RENTAL_COMPANY_DISCOUNT_PLAN
     where DURATION_TYPE = '30일 이상'
-), HISTORY2022 as (
-    select distinct T.CAR_ID
-    from CAR_RENTAL_COMPANY_RENTAL_HISTORY as T
-    where !(T.CAR_ID = any(
-        select T2.CAR_ID
-        from CAR_RENTAL_COMPANY_RENTAL_HISTORY as T2
-        where !(T2.START_DATE > DATE('2022-11-30') or T2.END_DATE < DATE('2022-11-1')))
-    )
 )
 
-select distinct R.CAR_ID, R.CAR_TYPE, CONVERT((R.DAILY_FEE * 30) * (100 - discount_rate) / 100, SIGNED) as FEE
-from (
-    select C.CAR_ID, C.CAR_TYPE, C.DAILY_FEE
-    from CAR_RENTAL_COMPANY_CAR as C
-    left join HISTORY2022 as H
-    on C.CAR_ID = H.CAR_ID
-    where H.CAR_ID is not null
-) as R
-join DISCOUNT30 as D
-on R.CAR_TYPE = D.CAR_TYPE
-where (R.CAR_TYPE = '세단' or R.CAR_TYPE = 'SUV') and (CONVERT((R.DAILY_FEE * 30) * (100 - discount_rate) / 100, SIGNED) >= 500000 and CONVERT((R.DAILY_FEE * 30) * (100 - discount_rate) / 100, SIGNED) < 2000000)
+
+select C.CAR_ID, C.CAR_TYPE, 30 * C.DAILY_FEE * (100 - T.DISCOUNT_RATE) / 100 as FEE
+from CAR_RENTAL_COMPANY_CAR C
+join THIRTY T
+on C.CAR_TYPE = T.CAR_TYPE
+where C.CAR_ID in (select CAR_ID from CANRENT) and 30 * C.DAILY_FEE * (100 - T.DISCOUNT_RATE) / 100 >= 500000 and 30 * C.DAILY_FEE * (100 - T.DISCOUNT_RATE) / 100 < 2000000
 order by FEE desc, CAR_TYPE asc, CAR_ID desc
+
+
+-- select * from CAR_RENTAL_COMPANY_RENTAL_HISTORY order by CAR_ID
 
