@@ -1,15 +1,19 @@
-# GENDER는 비어있을 수 있다.
-# 년, 월, 성별 별로 상품 구매한 회원수 집계
-# year(), month(), 
+-- 코드를 입력하세요
+-- GENDER는 0(남자), 1여자
+-- ONLINE_SALE 도일한 날짜, 회원ID, 상품 Id에 대해서는 하나만 존재
 
-# online sale을 year, month, uesrid로 분류
-# userid로 join하기, 
-# year, month, gender로 group by
 
-select O.YEAR as YEAR, O.MONTH as MONTH, U.GENDER as GENDER, count(distinct U.USER_ID) as USERS
-from (select * from USER_INFO where GENDER is not null) as U
-join (select YEAR(SALES_DATE) as YEAR, MONTH(SALES_DATE) as MONTH, USER_ID
-from ONLINE_SALE) as O
-on U.USER_ID = O.USER_ID
-group by O.YEAR, O.MONTH, U.GENDER
-order by YEAR, MONTH, GENDER;
+-- 년,월, 성별 별로, 삼품을 구매한 회원 수를 집계
+WITH NOTNULL AS (
+    SELECT *
+    FROM USER_INFO
+    WHERE GENDER IS NOT NULL
+)
+
+
+SELECT EXTRACT(YEAR FROM O.SALES_DATE) as YEAR, EXTRACT(MONTH FROM O.SALES_DATE) as MONTH, U.GENDER, count(DISTINCT U.USER_ID) as USERS
+FROM NOTNULL U
+JOIN ONLINE_SALE O
+ON U.USER_ID = O.USER_ID
+GROUP BY EXTRACT(YEAR FROM O.SALES_DATE), EXTRACT(MONTH FROM O.SALES_DATE), U.GENDER
+order by YEAR, MONTH, GENDER
