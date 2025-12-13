@@ -1,64 +1,58 @@
-
 import java.util.*;
 import java.io.*;
 
 public class Main {
-	public static int count = 0;
 
 	public static void main(String[] args) throws Exception {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		StringTokenizer st = new StringTokenizer(br.readLine());
 
-		int N = Integer.parseInt(st.nextToken());
+		int N = Integer.parseInt(br.readLine());
+		int[] arr = new int[N];
 
-		int[] A = new int[N + 1];
-		for (int i = 1; i <= N; i++) {
-			A[i] = Integer.parseInt(br.readLine());
+		for (int n = 0; n < N; n++) {
+			arr[n] = Integer.parseInt(br.readLine());
 		}
 
-		sort(A, 1, N);
+		// 머지소트
+		mergeSort(arr, 0, N - 1);
 
-		for (int i = 1; i <= N; i++) {
-			System.out.println(A[i]);
+
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+		for (int n = 0; n < N; n++) {
+			bw.write(arr[n] + "\n");
 		}
+		bw.flush();
 	}
 
-	public static void sort(int[] A, int s, int e) {
-		if (s < e) {
-			int p = partition(A, s, e);
-			sort(A, s, p - 1);
-			sort(A, p + 1, e);
-		}
-	}
+	public static void mergeSort(int[] arr, int s, int e) {
+		if (s >= e) return;
 
-	public static int partition(int[] A, int s, int e) {
-		int pivot = A[s];
+		int mid = (s + e) / 2;
+		mergeSort(arr, s, mid);
+		mergeSort(arr, mid + 1, e);
 
-		int l = s + 1;
-		int r = e;
+		int[] tmp = new int[e - s + 1];
+		int tmpI = 0;
+		int i1 = s;
+		int i2 = mid + 1;
 
-		while (l <= r) {
-			if (A[l] < pivot) {
-				l++;
-			} else if (A[r] > pivot) {
-				r--;
+		while (i1 <= mid && i2 <= e) {
+			if (arr[i1] <= arr[i2]) {
+				tmp[tmpI++] = arr[i1++];
 			} else {
-				int tmp = A[l];
-				A[l] = A[r];
-				A[r] = tmp;
-				l++;
-				r--;
+				tmp[tmpI++] = arr[i2++];
 			}
 		}
 
-		int tmp = A[r];
-		A[r] = pivot;
-		A[s] = tmp;
+		while (i1 <= mid) {
+			tmp[tmpI++] = arr[i1++];
+		}
+		while (i2 <= e) {
+			tmp[tmpI++] = arr[i2++];
+		}
 
-		return r;
+		for (int i = 0; i < tmp.length; i++) {
+			arr[s + i] = tmp[i];
+		}
 	}
 }
-
-// 피봇보다 A[s]가 작으면 s++
-// 피봇보다 A[e]가 크면 e--
-// 둘 다 아니면 스위치
